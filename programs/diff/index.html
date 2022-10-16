@@ -1,0 +1,90 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script>
+        $(function () {
+            $("#diff").load("output.html", function () {
+                $("#difflib_chg_to0__top tbody tr").each(function (index) {
+                    if (index >= 200000) {
+                        $(this).hide()
+                    }
+                }
+            });
+
+            $('#filter_form #submit').click(function (e) {
+                e.preventDefault()
+                let white_filter = $('input#white_filter').val()
+                let black_filter = $('input#black_filter').val()
+                let content_index = $('input#content_index').val()
+
+                if (!content_index) {
+                    content_index = 0
+                }
+
+                $("#difflib_chg_to0__top tbody tr").each(function (index) {
+                    let should_show = false
+
+                    if (index >= content_index && index < content_index + 200000) {
+                        $(this).find("td:not(.diff_next, .diff_header)").each(function () {
+                            content = $(this).text()
+                            if (white_filter) {
+                                if (white_filter.split(',').some(function (element, index, array) {
+                                    return content.includes(element)
+                                })) {
+                                    should_show = true
+                                }
+                            }
+                            else if (black_filter) {
+                                if (!black_filter.split(',').some(function (element, index, array) {
+                                    return content.includes(element)
+                                })) {
+                                    should_show = true
+                                }
+                            }
+                            else {
+                                should_show = true
+                            }
+                        })
+                    }
+
+                    if (should_show) {
+                        $(this).show()
+                    }
+                    else {
+                        $(this).hide()
+                    }
+
+                    index += 1
+                })
+            });
+        });
+    </script>
+</head>
+</head>
+
+<body>
+    <form id="filter_form" action="" name="registration">
+        <label for="white_filter">Whitelist Filter. (lines containing these chars will be displayed, Use ',' to separate
+            mutiple matchers) </label>
+        <input type="text" name="white_filter" id="white_filter" placeholder="empty" />
+        <br />
+        <label for="black_filter">Blacklist Filter. (lines containing these chars will be hided, Use ',' to separate
+            mutiple matchers) </label>
+        <input type="text" name="black_filter" id="black_filter" placeholder="empty" />
+        <br />
+        <label for="content_index">Diff Start Index (200k lines are showed) </label>
+        <input type="text" name="content_index" id="content_index" placeholder="0" />
+        <br />
+        <button id="submit" type="submit">Exec Filter</button>
+        <br />
+    </form>
+    <br />
+    <div id="diff"></div>
+</body>
+
+</html>
